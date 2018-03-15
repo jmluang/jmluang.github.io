@@ -15,7 +15,7 @@ html, body {
 
 body {
   background-color: white;
-  font: 13.34px helvetica, arial, clean, sans-serif;
+  font: 0.9em helvetica, arial, clean, sans-serif;
   *font-size: small;
   text-align: center;
   word-wrap:break-word;
@@ -24,7 +24,7 @@ body {
 @media (max-width: 480px){
   body {
     background-color: white;
-    font: 1em helvetica, arial, clean, sans-serif;
+    font: 0.9rem helvetica, arial, clean, sans-serif;
     text-align: center;
     word-wrap:break-word;
     word-break:break-all;
