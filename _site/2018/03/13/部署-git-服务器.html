@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-cmn-Hans" lang="zh-cmn-Hans">
+<head>
+
+    <link rel="shortcut icon" href="/images/favicon.icon" type="image/x-icon">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>部署 git 服务器</title>
+    <meta name="author" content="liang Juming" />
+
+    <!-- Homepage CSS -->
+    <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+
+    <link rel="stylesheet" href="/css/atom-one-dark.css">
+    <script src="/js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+</head>
+<body>
+
+  <div class="site">
+      <div class="title">
+    <a href="/">Jm's Blog</a>
+    <a class="extra" href="/about">about</a>
+  </div>
+
+<div id="post">
+  <p class="title">部署 git 服务器</p>
+  <span class="time">2018年03月13日</span>
+  <p>最近由于特殊原因，需要经常换电脑码代码。。。本来上放在github上的，但是项目是一个包含前后端的项目，而且非常多配置项，最蛋疼的是不能通过一个配置文件来统一管理。。总不能到一个地方就搞一次配置文件吧~正好有一个空闲的vps，所以就动手搭了一个 git 服务器，期间遇到了许多坑。。于是记录下来好了。</p>
+
+<p>安装 git 服务相关的 google 上有很多，大致都是一样。</p>
+
+<hr />
+
+<p><strong>步骤如下：</strong>
+1.安装 git</p>
+
+<p>2.创建 git 用户和用户组</p>
+
+<p>3.配置/etc/ssh/sshd_config文件，打开RSA认证</p>
+<pre><code class="language-Ini">#取消这两个备注
+RSAAuthentication yes
+PubkeyAuthentication yes
+</code></pre>
+
+<p>4.在客户端创建密钥，并把公钥导入到服务器的/home/git/.ssh/authorized_keys 文件中，一个一行（这里要注意文件权限，.ssh和authorized_keys文件都要属于git用户和用户组，可以使用 <code class="highlighter-rouge">chown git:git .ssh -R</code> 改变文件owner</p>
+
+<p>5.初始化GIT仓库 <code class="highlighter-rouge">git ini --bare example.git</code></p>
+
+<hr />
+
+<p>期间遇到一直遇到<code class="highlighter-rouge">Permission denied (publickey).</code>的提示，这里建议检查两个地方：</p>
+
+<ul>
+  <li>
+    <p>.ssh 和 authorized_keys 的权限和拥有者，authorized_keys文件的权限应为600，两个文件都应该属于 git 的</p>
+  </li>
+  <li>
+    <p>创建密钥要在客户端，就是你要连接git仓库的电脑创建，然后把公钥填到服务端（ git服务器 ）上authorized_keys</p>
+  </li>
+  <li>
+    <p>切换到公钥目录，<code class="highlighter-rouge">ssh-add</code>添加私钥到agent</p>
+  </li>
+</ul>
+
+<p>到这里就基本上没什么问题了，有关创建密钥可以参考<a href="https://help.github.com/articles/connecting-to-github-with-ssh/">github的方法</a></p>
+
+<hr />
+
+<p>一般执行git之前会先执行 ssh -T git@server 检查能不能顺利连接上git服务器。若成功的话会返回一段提示信息，例如github会返回</p>
+<pre><code class="language-string">Hi jmluang! You've successfully authenticated, but GitHub does not provide shell access.
+</code></pre>
+<p>而我的git会返回：</p>
+<pre><code class="language-string">fatal: Interactive git shell is not enabled.
+</code></pre>
+
+<p>好吧~虽然是自己用，但是还是希望能有好看一点的提示的。。
+翻了下<a href="https://git-scm.com/docs/git-shell">git手册</a>，手册里面写到了关于关闭交互式登陆并一个提示信息的方法，git手册中可能有一些问题，我把我的步骤放出来仅供参考。</p>
+
+<p>1.首先查看shell列表里面有没有git-shell<code class="highlighter-rouge">chsh -l</code>,没有的话就添加上去。Centos7 上是 /etc/shells文件</p>
+
+<p>2.切换到git用户，也可以用root用户，但是要注意权限</p>
+
+<p>3.执行命令 <code class="highlighter-rouge">mkdir $HOME/git-shell-commands</code>创建用户目录</p>
+
+<p>4.执行命令</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>cat &gt;$HOME/git-shell-commands/no-interactive-login &lt;&lt;\EOF
+#!/bin/sh
+#下面是输出的内容
+printf '%s\n' "Hi $USER! You've successfully authenticated. Welcome!"
+exit 128
+EOF
+</code></pre></div>
+<p>5.改变文件的执行权限<code class="highlighter-rouge">chmod +x $HOME/git-shell-commands/no-interactive-login</code></p>
+
+<p>6.然后执行 <code class="highlighter-rouge">chsh git -s /path/to/git-shell</code>，设置 git 登陆使用git-shell。一般是<code class="highlighter-rouge">chsh git -s /usr/bin/git-shell</code></p>
+
+<p>ssh -T git@server 就可以看到结果了</p>
+<pre><code class="language-string">Hi git! You've successfully authenticated, Welcome!
+</code></pre>
+
+<hr />
+
+<p>最后备注一下多个 git 帐号配置的方法</p>
+<div class="highlighter-rouge"><pre class="highlight"><code># 文件位置~/.ssh/config
+Host github.com
+    HostName github.com
+    User jmluang
+    IdentityFile /path/to/private/key/id_rsa
+</code></pre></div>
+<p>这样，ssh每次都会根据你的host去调用相关的私钥了</p>
+
+<blockquote>
+  <p>Written with <a href="https://stackedit.io/">StackEdit</a>.</p>
+</blockquote>
+
+</div>
+
+<div id="splict">
+</div>
+
+<div id="related">
+  <h4>相关文章</h4>
+  <ul class="posts">
+    
+      <li>&raquo; <a href="/2018/02/11/%E8%AE%B0%E5%BD%95%E4%B8%8B%E5%BC%80%E5%8F%91%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E5%9D%91.html">记录开发微信小程序中遇到的坑</a></li>
+    
+      <li>&raquo; <a href="/2018/01/04/git-%E4%BF%9D%E5%AD%98%E5%BD%93%E5%89%8D%E5%B7%A5%E4%BD%9C%E5%8C%BA%E5%B9%B6%E5%88%87%E6%8D%A2%E5%88%B0%E6%96%B0%E7%9A%84%E5%88%86%E6%94%AF.html">保存当前工作区并切换到新的分支</a></li>
+    
+  </ul>
+</div>
+  <div class="footer">
+    <div class="contact-left">
+      <p>
+        Luang Juming
+        <br />
+        ljm9601@hotmail.com
+      </p>
+    </div>
+    <div class="contact-right">
+      <p>
+        <a href="https://github.com//jmluang/">github.com/jmluang</a>
+        <br />
+        <a href="https://github.com//jmluang">Theme by @jmluang</a>
+      </p>
+    </div>
+  </div>
+
+
+  </div>
+
+<!-- <a href="http://github.com/jmluang"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" /></a> -->
+
+</body>
+</html>
