@@ -21,15 +21,6 @@ body {
   word-wrap:break-word;
   word-break:break-all;
 }
-@media (max-width: 480px){
-  body {
-    background-color: white;
-    font: 0.9rem helvetica, arial, clean, sans-serif;
-    text-align: center;
-    word-wrap:break-word;
-    word-break:break-all;
-  }
-}
 
 h1, h2, h3, h4, h5, h6 {
   font-size: 100% ;
@@ -268,7 +259,7 @@ ul.posts {
 }
 
 #about h2{
-  font-size: 2rem;
+  font-size: 1.6rem;
 }
 
 #about img{
