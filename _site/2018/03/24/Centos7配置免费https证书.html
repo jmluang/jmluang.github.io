@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-cmn-Hans" lang="zh-cmn-Hans">
+<head>
+
+    <link rel="shortcut icon" href="/images/favicon.icon" type="image/x-icon">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>Centos7配置免费https证书</title>
+    <meta name="author" content="liang Juming" />
+
+    <!-- Homepage CSS -->
+    <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+
+    <link rel="stylesheet" href="/css/atom-one-dark.css">
+    <script src="/js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+</head>
+<body>
+
+  <div class="site">
+      <div class="title">
+    <a href="/">Jm's Blog</a>
+    <a class="extra" href="/about">about</a>
+  </div>
+
+<div id="post">
+  <p class="title">Centos7配置免费https证书</p>
+  <span class="time">2018年03月24日</span>
+  <p>现在许多网站都支持 HTTPS 了，除了会在地址栏显示绿色锁之外，HTTPS 还有更多的好处。例如开发微信小程序就需要用到 HTTPS，否则请求是无法发送的~</p>
+
+<p>所以我也打算给我的 Centos7 上一个 HTTPS。配置 Https 首先需要一个 SSL 证书，一般这个证书都需要一些权威的 CA 颁发的，如果自己签的证书不会被浏览器认同，也就不会显示绿锁了。</p>
+
+<p><a href="https://certbot.eff.org/">certbot</a> 是一个提供自定部署 HTTPS 脚本的网站，它使用了 <a href="https://letsencrypt.org/">Let’s Encrypt</a>的证书。虽然证书的有效期只有一段时间，但是能不断地更新证书的有效期，对于个人使用而言就足够了。</p>
+
+<p>下面是安装的过程和一些总结</p>
+
+<hr />
+
+<p>首先是幻境依赖的问题，Certbot依赖Python2.7,或者3.4+。除此之外，还需要root权限去写<code class="highlighter-rouge">/etc/letsencrypt</code>, <code class="highlighter-rouge">/var/log/letsencrypt</code>, <code class="highlighter-rouge">/var/lib/letsencrypt</code>这三个文件；绑定80和443端口（如果使用<code class="highlighter-rouge">standalone</code>插件的话，还须有权限去读写你的 webserver 配置文件（如<code class="highlighter-rouge">apache</code>或<code class="highlighter-rouge">nginx</code>)。更多的信息可以参考<a href="https://certbot.eff.org/docs/install.html#alternate-installation-methods">cerbot的文档</a>。不过这些都不用担心，应为自动脚本会检查你的系统环境，并帮你安装一些必要的依赖。</p>
+
+<p>然后就是你需要先安装你的<code class="highlighter-rouge">webserver</code>，这里我安装了<code class="highlighter-rouge">nginx</code>，然后启动<code class="highlighter-rouge">nginx</code>。</p>
+
+<p>运行下免的命令就可以下载certbot脚本</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>$ wget https://dl.eff.org/certbot-auto
+$ chmod a+x ./certbot-auto
+$ ./certbot-auto --help
+</code></pre></div>
+<p>这样，如果能看到屏幕打印信息，就说明下载成功了</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Usage: certbot-auto [OPTIONS]
+A self-updating wrapper script for the Certbot ACME client. When run, updates
+to both this script and certbot will be downloaded and installed. After
+ensuring you have the latest versions installed, certbot will be invoked with
+all arguments you have provided.
+
+Help for certbot itself cannot be provided until it is installed.
+
+  --debug                                   attempt experimental installation
+  -h, --help                                print this help
+  -n, --non-interactive, --noninteractive   run without asking for user input
+  --no-bootstrap                            do not install OS dependencies
+  --no-self-upgrade                         do not download updates
+  --os-packages-only                        install OS dependencies and exit
+  --install-only                            install certbot, upgrade if needed, and exit
+  -v, --verbose                             provide more output
+  -q, --quiet                               provide only update/error output;
+                                            implies --non-interactive
+
+All arguments are accepted and forwarded to the Certbot client when run.
+
+</code></pre></div>
+<p>脚本是通过 https 下载下来的，相对来说比较安全。但如果你想再次检查脚本是否被伪造，可以通过以下方式验证</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>$ wget -N https://dl.eff.org/certbot-auto.asc
+$ gpg2 --recv-key A2CFB51FA275A7286234E7B24D17C995CD9775F2
+$ gpg2 --trusted-key 4D17C995CD9775F2 --verify certbot-auto.asc certbot-auto
+</code></pre></div>
+
+<p>然后开始配置 https ,我的环境是centos7 + nginx</p>
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>./certbot-auto --nginx
+</code></pre></div>
+<p>安装nginx插件，运行后按照指示安装相应的依赖库</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>$ ./certbot-auto certonly 
+</code></pre></div>
+
+<p>获取一个证书<code class="highlighter-rouge"> ./certbot-auto certonly </code>
+跟着提示步骤选择</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>How would you like to authenticate with the ACME CA?
+-------------------------------------------------------------------------------
+1: Apache Web Server plugin - Beta (apache)
+2: Nginx Web Server plugin - Alpha (nginx)
+3: Spin up a temporary webserver (standalone)
+4: Place files in webroot directory (webroot)
+-------------------------------------------------------------------------------
+Select the appropriate number [1-4] then [enter] (press 'c' to cancel): 
+</code></pre></div>
+<p>这里我需要的是nginx，所以我输入2</p>
+
+<p><code class="highlighter-rouge">Enter email address (used for urgent renewal and security notices) (Enter 'c' to
+cancel): </code>
+提示输入邮箱，会通知你关于证书的一些信息</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>Please read the Terms of Service at
+https://letsencrypt.org/documents/LE-SA-v1.2-November-15-2017.pdf. You must
+agree in order to register with the ACME server at
+https://acme-v01.api.letsencrypt.org/directory
+</code></pre></div>
+<p>提示你让你去阅读使用协议，只有同意才能注册</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Would you be willing to share your email address with the Electronic Frontier
+Foundation, a founding partner of the Let's Encrypt project and the non-profit
+organization that develops Certbot? We'd like to send you email about EFF and
+our work to encrypt the web, protect its users and defend digital rights.
+</code></pre></div>
+<p>提示你能否把你的邮箱地址共享给 Electronic Frontier
+Foundation ，这是 Let’s Encrypt 的合作伙伴</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Please enter in your domain name(s) (comma and/or space separated)  (Enter 'c'
+to cancel): 
+</code></pre></div>
+<p>这里输入你的域名地址</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Obtaining a new certificate
+Performing the following challenges:
+http-01 challenge for jmluang.tk
+Using default address 80 for authentication.
+Waiting for verification...
+Cleaning up challenges
+
+IMPORTANT NOTES:
+ - Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/jmluang.tk/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/jmluang.tk/privkey.pem
+   Your cert will expire on 2018-06-22. To obtain a new or tweaked
+   version of this certificate in the future, simply run certbot-auto
+   again. To non-interactively renew *all* of your certificates, run
+   "certbot-auto renew"
+ - Your account credentials have been saved in your Certbot
+   configuration directory at /etc/letsencrypt. You should make a
+   secure backup of this folder now. This configuration directory will
+   also contain certificates and private keys obtained by Certbot so
+   making regular backups of this folder is ideal.
+ - If you like Certbot, please consider supporting our work by:
+
+   Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+   Donating to EFF:                    https://eff.org/donate-le
+</code></pre></div>
+<p>到这里证书就生成啦，还提示了一些关键的信息给你知，包括证书存放的位置，还有证书过期的时间以及如何续期证书，以及提醒你应该及时备份你的 /etc/letsencrypt 目录。还有就是如果有用的话可以进行一定的捐赠</p>
+
+<p>然后就是配置nginx了</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>// http 转跳到 https 
+server {
+        listen       80;
+        server_name  jmluang.tk;
+	    rewrite ^(.*) https://$server_name$1 permanent;
+}
+
+// https 配置
+server {
+        listen       443 ssl http2;
+        #listen       80;
+        server_name  jmluang.tk;
+        ssl           on;
+        ssl_certificate "/etc/letsencrypt/live/jmluang.tk/fullchain.pem";
+        ssl_certificate_key "/etc/letsencrypt/live/jmluang.tk/privkey.pem";
+#        ssl_session_cache shared:SSL:1m;
+#        ssl_session_timeout  10m;
+#        ssl_ciphers HIGH:!aNULL:!MD5;
+#        ssl_prefer_server_ciphers on;
+ 
+        location / {
+                root  /var/www/html;
+                index  index.html;
+        }
+ 
+}
+</code></pre></div>
+<p>这里<code class="highlighter-rouge">ssl_certificate</code> 和 <code class="highlighter-rouge">ssl_certificate_key</code> 的文件路径都在上面提到的 <code class="highlighter-rouge">/etc/letsencrypt</code>目录中，你只要修改你的域名就可以了。其他的不需要改动，配置文件都是一样的~</p>
+
+<p>最后应用配置到<code class="highlighter-rouge">nginx</code> ：<code class="highlighter-rouge">nginx -s reload</code></p>
+
+<p>访问域名，出现绿色锁就完成啦！</p>
+
+<p>最后到期了记得运行 <code class="highlighter-rouge">certbot-auto renew </code> 为你的证书续期哦~ 也可以加入到crontab中自动运行！</p>
+
+<blockquote>
+  <p>Written with <a href="https://stackedit.io/">StackEdit</a>.</p>
+</blockquote>
+
+</div>
+
+<div id="splict">
+</div>
+
+<div id="related">
+  <h4>相关文章</h4>
+  <ul class="posts">
+    
+      <li>&raquo; <a href="/2018/03/13/%E9%83%A8%E7%BD%B2-git-%E6%9C%8D%E5%8A%A1%E5%99%A8.html">部署 git 服务器</a></li>
+    
+      <li>&raquo; <a href="/2018/02/11/%E8%AE%B0%E5%BD%95%E4%B8%8B%E5%BC%80%E5%8F%91%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E5%9D%91.html">记录开发微信小程序中遇到的坑</a></li>
+    
+      <li>&raquo; <a href="/2018/01/04/git-%E4%BF%9D%E5%AD%98%E5%BD%93%E5%89%8D%E5%B7%A5%E4%BD%9C%E5%8C%BA%E5%B9%B6%E5%88%87%E6%8D%A2%E5%88%B0%E6%96%B0%E7%9A%84%E5%88%86%E6%94%AF.html">保存当前工作区并切换到新的分支</a></li>
+    
+  </ul>
+</div>
+  <div class="footer">
+    <div class="contact-left">
+      <p>
+        Luang Juming
+        <br />
+        ljm9601@hotmail.com
+      </p>
+    </div>
+    <div class="contact-right">
+      <p>
+        <br />
+        <a href="https://github.com/jmluang/jmluang.github.io">Theme by @jmluang</a>
+      </p>
+    </div>
+  </div>
+
+
+  </div>
+
+<!-- <a href="http://github.com/jmluang"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" /></a> -->
+
+</body>
+</html>

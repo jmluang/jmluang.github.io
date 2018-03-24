@@ -49,7 +49,7 @@ PubkeyAuthentication yes
 
 <p>4.在客户端创建密钥，并把公钥导入到服务器的/home/git/.ssh/authorized_keys 文件中，一个一行（这里要注意文件权限，.ssh和authorized_keys文件都要属于git用户和用户组，可以使用 <code class="highlighter-rouge">chown git:git .ssh -R</code> 改变文件owner</p>
 
-<p>5.初始化GIT仓库 <code class="highlighter-rouge">git ini --bare example.git</code></p>
+<p>5.初始化GIT仓库 <code class="highlighter-rouge">git init --bare example.git</code></p>
 
 <hr />
 
@@ -126,6 +126,8 @@ Host github.com
 <div id="related">
   <h4>相关文章</h4>
   <ul class="posts">
+    
+      <li>&raquo; <a href="/2018/03/24/Centos7%E9%85%8D%E7%BD%AE%E5%85%8D%E8%B4%B9https%E8%AF%81%E4%B9%A6.html">Centos7配置免费https证书</a></li>
     
       <li>&raquo; <a href="/2018/02/11/%E8%AE%B0%E5%BD%95%E4%B8%8B%E5%BC%80%E5%8F%91%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E5%9D%91.html">记录开发微信小程序中遇到的坑</a></li>
     
