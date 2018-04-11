@@ -36,19 +36,19 @@
 
 <p><strong>问题： image之间多出间隔</strong>
 在没有设置任何样式的时候，图片与图片之间会出现5px的间距
- <img src="/images/posts/2018021101.PNG" alt="图1" /></p>
+ <img src="http://localhost:4000/images/posts/2018021101.PNG" alt="图1" /></p>
 
 <p>解决办法：为图片添加样式</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>display:block
-</code></pre></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>display:block
+</code></pre></div></div>
 
 <hr />
 
 <p><strong>问题：scroll-view的bindscrolltolower触发问题</strong>
 bindscrolltolower事件太灵敏了，经常会触发多次函数
- <img src="/images/posts/2018021102.PNG" alt="图2" />
+ <img src="http://localhost:4000/images/posts/2018021102.PNG" alt="图2" />
 解决办法：添加一个参数阻止多次促发函数</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>···
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>···
 data:{
 	allowLoad: true
 }
@@ -62,7 +62,7 @@ scrollToLower: function(){
     }, 1000)
 	}
 }
-</code></pre></div>
+</code></pre></div></div>
 <p>这样的解决方法依然会促发多次函数，但能一定程度上缓解重复执行函数的问题，基本一次下拉只执行一次函数。如果操作需要非常频繁的话可以适当的调整setTimeOut的第二个参数。</p>
 
 <blockquote>
@@ -78,11 +78,11 @@ scrollToLower: function(){
   <h4>相关文章</h4>
   <ul class="posts">
     
+      <li>&raquo; <a href="/2018/04/11/php7%E5%AE%89%E8%A3%85Xhprof.html">php7安装Xhprof</a></li>
+    
       <li>&raquo; <a href="/2018/03/24/Centos7%E9%85%8D%E7%BD%AE%E5%85%8D%E8%B4%B9https%E8%AF%81%E4%B9%A6.html">Centos7配置免费https证书</a></li>
     
       <li>&raquo; <a href="/2018/03/13/%E9%83%A8%E7%BD%B2-git-%E6%9C%8D%E5%8A%A1%E5%99%A8.html">部署 git 服务器</a></li>
-    
-      <li>&raquo; <a href="/2018/01/04/git-%E4%BF%9D%E5%AD%98%E5%BD%93%E5%89%8D%E5%B7%A5%E4%BD%9C%E5%8C%BA%E5%B9%B6%E5%88%87%E6%8D%A2%E5%88%B0%E6%96%B0%E7%9A%84%E5%88%86%E6%94%AF.html">保存当前工作区并切换到新的分支</a></li>
     
   </ul>
 </div>

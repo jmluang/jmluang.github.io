@@ -45,13 +45,13 @@
 <p>然后就是你需要先安装你的<code class="highlighter-rouge">webserver</code>，这里我安装了<code class="highlighter-rouge">nginx</code>，然后启动<code class="highlighter-rouge">nginx</code>。</p>
 
 <p>运行下免的命令就可以下载certbot脚本</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>$ wget https://dl.eff.org/certbot-auto
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ wget https://dl.eff.org/certbot-auto
 $ chmod a+x ./certbot-auto
 $ ./certbot-auto --help
-</code></pre></div>
+</code></pre></div></div>
 <p>这样，如果能看到屏幕打印信息，就说明下载成功了</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>Usage: certbot-auto [OPTIONS]
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Usage: certbot-auto [OPTIONS]
 A self-updating wrapper script for the Certbot ACME client. When run, updates
 to both this script and certbot will be downloaded and installed. After
 ensuring you have the latest versions installed, certbot will be invoked with
@@ -72,23 +72,23 @@ Help for certbot itself cannot be provided until it is installed.
 
 All arguments are accepted and forwarded to the Certbot client when run.
 
-</code></pre></div>
+</code></pre></div></div>
 <p>脚本是通过 https 下载下来的，相对来说比较安全。但如果你想再次检查脚本是否被伪造，可以通过以下方式验证</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>$ wget -N https://dl.eff.org/certbot-auto.asc
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ wget -N https://dl.eff.org/certbot-auto.asc
 $ gpg2 --recv-key A2CFB51FA275A7286234E7B24D17C995CD9775F2
 $ gpg2 --trusted-key 4D17C995CD9775F2 --verify certbot-auto.asc certbot-auto
-</code></pre></div>
+</code></pre></div></div>
 
 <p>然后开始配置 https ,我的环境是centos7 + nginx</p>
-<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>./certbot-auto --nginx
-</code></pre></div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>./certbot-auto <span class="nt">--nginx</span>
+</code></pre></div></div>
 <p>安装nginx插件，运行后按照指示安装相应的依赖库</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>$ ./certbot-auto certonly 
-</code></pre></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ./certbot-auto certonly 
+</code></pre></div></div>
 
 <p>获取一个证书<code class="highlighter-rouge"> ./certbot-auto certonly </code>
 跟着提示步骤选择</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>How would you like to authenticate with the ACME CA?
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>How would you like to authenticate with the ACME CA?
 -------------------------------------------------------------------------------
 1: Apache Web Server plugin - Beta (apache)
 2: Nginx Web Server plugin - Alpha (nginx)
@@ -96,33 +96,33 @@ $ gpg2 --trusted-key 4D17C995CD9775F2 --verify certbot-auto.asc certbot-auto
 4: Place files in webroot directory (webroot)
 -------------------------------------------------------------------------------
 Select the appropriate number [1-4] then [enter] (press 'c' to cancel): 
-</code></pre></div>
+</code></pre></div></div>
 <p>这里我需要的是nginx，所以我输入2</p>
 
 <p><code class="highlighter-rouge">Enter email address (used for urgent renewal and security notices) (Enter 'c' to
 cancel): </code>
 提示输入邮箱，会通知你关于证书的一些信息</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>Please read the Terms of Service at
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Please read the Terms of Service at
 https://letsencrypt.org/documents/LE-SA-v1.2-November-15-2017.pdf. You must
 agree in order to register with the ACME server at
 https://acme-v01.api.letsencrypt.org/directory
-</code></pre></div>
+</code></pre></div></div>
 <p>提示你让你去阅读使用协议，只有同意才能注册</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>Would you be willing to share your email address with the Electronic Frontier
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Would you be willing to share your email address with the Electronic Frontier
 Foundation, a founding partner of the Let's Encrypt project and the non-profit
 organization that develops Certbot? We'd like to send you email about EFF and
 our work to encrypt the web, protect its users and defend digital rights.
-</code></pre></div>
+</code></pre></div></div>
 <p>提示你能否把你的邮箱地址共享给 Electronic Frontier
 Foundation ，这是 Let’s Encrypt 的合作伙伴</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>Please enter in your domain name(s) (comma and/or space separated)  (Enter 'c'
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Please enter in your domain name(s) (comma and/or space separated)  (Enter 'c'
 to cancel): 
-</code></pre></div>
+</code></pre></div></div>
 <p>这里输入你的域名地址</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>Obtaining a new certificate
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Obtaining a new certificate
 Performing the following challenges:
 http-01 challenge for jmluang.tk
 Using default address 80 for authentication.
@@ -147,11 +147,11 @@ IMPORTANT NOTES:
 
    Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
    Donating to EFF:                    https://eff.org/donate-le
-</code></pre></div>
+</code></pre></div></div>
 <p>到这里证书就生成啦，还提示了一些关键的信息给你知，包括证书存放的位置，还有证书过期的时间以及如何续期证书，以及提醒你应该及时备份你的 /etc/letsencrypt 目录。还有就是如果有用的话可以进行一定的捐赠</p>
 
 <p>然后就是配置nginx了</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>// http 转跳到 https 
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// http 转跳到 https 
 server {
         listen       80;
         server_name  jmluang.tk;
@@ -177,7 +177,7 @@ server {
         }
  
 }
-</code></pre></div>
+</code></pre></div></div>
 <p>这里<code class="highlighter-rouge">ssl_certificate</code> 和 <code class="highlighter-rouge">ssl_certificate_key</code> 的文件路径都在上面提到的 <code class="highlighter-rouge">/etc/letsencrypt</code>目录中，你只要修改你的域名就可以了。其他的不需要改动，配置文件都是一样的~</p>
 
 <p>最后应用配置到<code class="highlighter-rouge">nginx</code> ：<code class="highlighter-rouge">nginx -s reload</code></p>
@@ -199,11 +199,11 @@ server {
   <h4>相关文章</h4>
   <ul class="posts">
     
+      <li>&raquo; <a href="/2018/04/11/php7%E5%AE%89%E8%A3%85Xhprof.html">php7安装Xhprof</a></li>
+    
       <li>&raquo; <a href="/2018/03/13/%E9%83%A8%E7%BD%B2-git-%E6%9C%8D%E5%8A%A1%E5%99%A8.html">部署 git 服务器</a></li>
     
       <li>&raquo; <a href="/2018/02/11/%E8%AE%B0%E5%BD%95%E4%B8%8B%E5%BC%80%E5%8F%91%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E5%9D%91.html">记录开发微信小程序中遇到的坑</a></li>
-    
-      <li>&raquo; <a href="/2018/01/04/git-%E4%BF%9D%E5%AD%98%E5%BD%93%E5%89%8D%E5%B7%A5%E4%BD%9C%E5%8C%BA%E5%B9%B6%E5%88%87%E6%8D%A2%E5%88%B0%E6%96%B0%E7%9A%84%E5%88%86%E6%94%AF.html">保存当前工作区并切换到新的分支</a></li>
     
   </ul>
 </div>
