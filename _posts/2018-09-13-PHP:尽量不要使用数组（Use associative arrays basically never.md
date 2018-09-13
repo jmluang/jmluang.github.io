@@ -1,6 +1,6 @@
 ---
 layout: post
-title: PHP: Use associative arrays basically never
+title: Use associative arrays basically never
 ---
 
 # PHP:尽量不要使用数组（Use associative arrays basically never
