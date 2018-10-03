@@ -1,0 +1,261 @@
+---
+layout: post
+title: 构建Axios客户端
+---
+
+最近要搭建一个符合下面几点要求的 API 客户端：
+
+1. 能灵活处理错误信息
+2. 可以自定义 HTTP 头部，比如 `Authorization`
+3. 如果需要的话，可以在 `Vuex store` 中使用。比如获取用户的 JWT
+4. 定义符合 RESTful 风格的 HTTP METHOD
+
+一般来说写一个符合这样的客户端有很多种选择，不过我选择的是用 Axios 来写，如果你喜欢其他也行。
+
+## 客户端
+文件 `Client.js` 文件是其他类的基类，可以用来创建一个接口实例，我们在这个类文件中定义处理请求和响应的方法，给子类调用。
+
+首先我们需要定义请求拦截器、请求配置以及错误回调方法。配置文件可以让我们方便地自定义一些请求参数，你也可以用你自己的方法设置这些配置，反正方便就行。
+
+错误回调通过 [`Sentry's Raven`](https://docs.sentry.io/clients/javascript/usage/) 来管理:
+
+```
+client.interceptors.request.use(
+  requestConfig => requestConfig,
+  (requestError) => {
+    Raven.captureException(requestError);
+
+    return Promise.reject(requestError);
+  },
+);
+```
+
+响应拦截器接受2个参数，第一个是回调函数，第二个是响应错误对象
+
+```
+client.interceptors.response.use(
+  response => response,
+  (error) => {
+    if (error.response.status >= 500) {
+      Raven.captureException(error);
+    }
+
+    return Promise.reject(error);
+  },
+);
+```
+
+下面是完整的文件，在 `Vuex store` 中检查用户的 token， 并传到实例中的 header 中。
+
+```
+import axios from 'axios';
+import Raven from 'raven-js';
+import store from '../store/index';
+
+/**
+ * 创建一个新的 Axios 客户端类
+ * @see https://github.com/mzabriskie/axios#creating-an-instance
+ */
+const getClient = (baseUrl = null) => {
+
+  const options = {
+    baseURL: baseUrl
+  };
+
+  if (store.getters['users/isAuthenticated']) {
+    options.headers = {
+      Authorization: `Bearer ${store.getters['users/accessToken']}`,
+    };
+  }
+
+  const client = axios.create(options);
+
+  // 添加一个请求拦截器
+  client.interceptors.request.use(
+    requestConfig => requestConfig,
+    (requestError) => {
+      Raven.captureException(requestError);
+
+      return Promise.reject(requestError);
+    },
+  );
+
+  // 添加一个响应拦截器
+  client.interceptors.response.use(
+    response => response,
+    (error) => {
+      if (error.response.status >= 500) {
+        Raven.captureException(error);
+      }
+
+      return Promise.reject(error);
+    },
+  );
+
+  return client;
+};
+
+class ApiClient {
+  constructor(baseUrl = null) {
+    this.client = getClient(baseUrl);
+  }
+
+  get(url, conf = {}) {
+    return this.client.get(url, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  }
+
+  delete(url, conf = {}) {
+    return this.client.delete(url, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  }
+
+  head(url, conf = {}) {
+    return this.client.head(url, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  }
+
+  options(url, conf = {}) {
+    return this.client.options(url, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  }
+
+  post(url, data = {}, conf = {}) {
+    return this.client.post(url, data, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  }
+
+  put(url, data = {}, conf = {}) {
+    return this.client.put(url, data, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  }
+
+  patch(url, data = {}, conf = {}) {
+    return this.client.patch(url, data, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  }
+}
+
+export { ApiClient };
+
+/**
+ * HTTP Client 基类
+ */
+export default {
+  // 提供默认的请求方法
+  get(url, conf = {}) {
+    return getClient().get(url, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  },
+
+  delete(url, conf = {}) {
+    return getClient().delete(url, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  },
+
+  head(url, conf = {}) {
+    return getClient().head(url, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  },
+
+  options(url, conf = {}) {
+    return getClient().options(url, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  },
+
+  post(url, data = {}, conf = {}) {
+    return getClient().post(url, data, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  },
+
+  put(url, data = {}, conf = {}) {
+    return getClient().put(url, data, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  },
+
+  patch(url, data = {}, conf = {}) {
+    return getClient().patch(url, data, conf)
+      .then(response => Promise.resolve(response))
+      .catch(error => Promise.reject(error));
+  },
+};
+```
+
+默认的实例提供所有的 HTTP 方法可以直接使用 Axios，下面是一个简单的例子：
+
+```
+import client from './client';
+client.get('/foo').then((response) => {
+    // do something ...
+})
+```
+
+## 通过 `client.js` 文件去创建你自己的 API 方法
+
+通过上面的实例，你可以创建你自己的 API 类。
+
+比如，假设我们有一个 `/users` 资源，你可以创建特殊的方法去管理你的用户：
+
+```
+import { ApiClient } from '../client';
+
+let client = new ApiClient();
+
+export default {
+
+    all() {
+        return client.get('/users');
+    },
+
+    find(userId) {
+        return client.get(`/users/${userId}`);
+    },
+
+    update(userId, data) {
+        return client.put(`/users/${userId}`, data);
+    }
+
+}
+```
+
+上面的例子比较简单，你也可以通过一连串的 `Promise` 操作来创建复杂的 API。
+
+## 在 Vuex 中使用
+
+下面是一个在 `Vuex store` 中获取用户和他的个人资料的例子：
+
+```
+import usersClient from './api/users';
+
+// ...
+
+profile({ commit }, userId) {
+  usersClient.find(userId)
+    .then((response) => {
+      let {
+        firstName,
+        lastName,
+      } = response.data;
+
+      commit('PROFILE', { firstName, lastName });
+    });
+},
+```
+
+## 总结
+一直需要注意的地方是，一些比较灵活的客户端都能通过回调函数去设置参数，我们这里是直接在 `Vuex store` 里设置了，这样不太灵活。
+
+构建一个比较详细的 HTTP 客户端模块，可以方便地在想要调用的时候调用。
