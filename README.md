@@ -1,4 +1,4 @@
-# Jekyll blog Theme
+# Jekyll blog theme
 
 This repository contain Jekyll theme and my posts.
 
